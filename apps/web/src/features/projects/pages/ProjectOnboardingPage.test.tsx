@@ -5,6 +5,7 @@ import { ProjectOnboardingPage } from "./ProjectOnboardingPage"
 
 const mockMutateAsync = vi.fn()
 const mockNavigate = vi.fn()
+const mockPickProjectDirectory = vi.fn()
 let mockIsPending = false
 
 vi.mock("@tanstack/react-router", () => ({
@@ -21,10 +22,17 @@ vi.mock("@tanstack/react-query", () => ({
   }),
 }))
 
+vi.mock("../infrastructure/desktopClient", () => ({
+  desktopClient: {
+    pickProjectDirectory: () => mockPickProjectDirectory(),
+  },
+}))
+
 describe("ProjectOnboardingPage", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockMutateAsync.mockResolvedValue(undefined)
+    mockPickProjectDirectory.mockResolvedValue("/home/project")
     mockIsPending = false
   })
 
@@ -49,13 +57,38 @@ describe("ProjectOnboardingPage", () => {
     render(<ProjectOnboardingPage />)
 
     await user.type(screen.getByTestId("project-name-input"), "My Project")
-    await user.type(screen.getByTestId("project-path-input"), "/home/project")
+    await user.click(screen.getByTestId("project-path-input"))
     await user.click(screen.getByTestId("submit-button"))
 
+    expect(mockPickProjectDirectory).toHaveBeenCalledTimes(1)
     expect(mockMutateAsync).toHaveBeenCalledWith({
       name: "My Project",
       path: "/home/project",
     })
+  })
+
+  it("updates path input with selected directory", async () => {
+    const user = userEvent.setup()
+    render(<ProjectOnboardingPage />)
+
+    await user.click(screen.getByTestId("project-path-input"))
+
+    expect(mockPickProjectDirectory).toHaveBeenCalledTimes(1)
+    expect(screen.getByTestId("project-path-input")).toHaveValue("/home/project")
+  })
+
+  it("keeps path unchanged when picker is cancelled", async () => {
+    mockPickProjectDirectory.mockResolvedValueOnce(null)
+    const user = userEvent.setup()
+    render(<ProjectOnboardingPage />)
+
+    const pathInput = screen.getByTestId("project-path-input")
+    expect(pathInput).toHaveValue("")
+
+    await user.click(pathInput)
+
+    expect(mockPickProjectDirectory).toHaveBeenCalledTimes(1)
+    expect(pathInput).toHaveValue("")
   })
 
   it("shows error message on mutation failure", async () => {
@@ -64,7 +97,7 @@ describe("ProjectOnboardingPage", () => {
     render(<ProjectOnboardingPage />)
 
     await user.type(screen.getByTestId("project-name-input"), "Test")
-    await user.type(screen.getByTestId("project-path-input"), "bad-path")
+    await user.click(screen.getByTestId("project-path-input"))
     await user.click(screen.getByTestId("submit-button"))
 
     expect(await screen.findByTestId("error-message")).toHaveTextContent("Invalid path")
@@ -75,7 +108,7 @@ describe("ProjectOnboardingPage", () => {
     render(<ProjectOnboardingPage />)
 
     await user.type(screen.getByTestId("project-name-input"), "My Project")
-    await user.type(screen.getByTestId("project-path-input"), "/home/project")
+    await user.click(screen.getByTestId("project-path-input"))
     await user.click(screen.getByTestId("submit-button"))
 
     expect(mockNavigate).toHaveBeenCalledWith({ to: "/" })

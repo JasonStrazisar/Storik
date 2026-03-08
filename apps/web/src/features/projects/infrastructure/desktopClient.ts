@@ -245,6 +245,8 @@ async function invokeCommand<TResponse>(
           return browserRestoreProject(payload?.payload as RestoreProjectPayload) as TResponse
         case "rename_project":
           return browserRenameProject(payload?.payload as RenameProjectPayload) as TResponse
+        case "pick_project_directory":
+          return null as TResponse
         default:
           throw new Error(`Unsupported command: ${command}`)
       }
@@ -293,5 +295,9 @@ export const desktopClient = {
 
   renameProject(payload: RenameProjectPayload) {
     return invokeCommand<Project>("rename_project", { payload })
+  },
+
+  pickProjectDirectory() {
+    return invokeCommand<string | null>("pick_project_directory")
   },
 }

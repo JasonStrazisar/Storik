@@ -7,6 +7,8 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use tauri::Manager;
+use tauri_plugin_dialog::DialogExt;
+use tauri_plugin_dialog::FilePath;
 use uuid::Uuid;
 
 #[derive(Debug, Serialize)]
@@ -97,6 +99,15 @@ fn validate_path(path: &str) -> Result<(), CommandError> {
         return Err(command_error("path_validation", "Path must be absolute"));
     }
     Ok(())
+}
+
+fn normalize_selected_directory(path: Option<FilePath>) -> Option<String> {
+    path.and_then(|selected| {
+        selected
+            .into_path()
+            .ok()
+            .map(|directory| directory.to_string_lossy().to_string())
+    })
 }
 
 fn init_db(db_path: &Path) -> Result<(), CommandError> {
@@ -387,9 +398,25 @@ fn rename_project(state: tauri::State<AppState>, payload: RenameProjectPayload) 
     with_connection(&state, |conn| rename_project_impl(conn, payload))
 }
 
+#[tauri::command]
+async fn pick_project_directory(app: tauri::AppHandle) -> Result<Option<String>, CommandError> {
+    let (sender, mut receiver) = tauri::async_runtime::channel(1);
+    app.dialog().file().pick_folder(move |folder| {
+        let _ = sender.try_send(folder);
+    });
+
+    let selected_directory = receiver
+        .recv()
+        .await
+        .ok_or_else(|| command_error("dialog", "Failed to receive directory picker selection"))?;
+
+    Ok(normalize_selected_directory(selected_directory))
+}
+
 fn main() {
     tauri::Builder::default()
         .manage(AppState::default())
+        .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
             let app_data_dir = app
                 .path()
@@ -417,6 +444,7 @@ fn main() {
             archive_project,
             restore_project,
             rename_project,
+            pick_project_directory,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -427,16 +455,17 @@ mod tests {
     use super::*;
     use tempfile::tempdir;
 
-    fn setup_conn() -> Connection {
+    fn setup_conn() -> (tempfile::TempDir, Connection) {
         let dir = tempdir().expect("tempdir");
         let db_path = dir.path().join("test.sqlite3");
         init_db(&db_path).expect("init db");
-        Connection::open(db_path).expect("open db")
+        let conn = Connection::open(db_path).expect("open db");
+        (dir, conn)
     }
 
     #[test]
     fn create_and_get_active_project() {
-        let conn = setup_conn();
+        let (_dir, conn) = setup_conn();
 
         let created = create_project_impl(
             &conn,
@@ -456,7 +485,7 @@ mod tests {
 
     #[test]
     fn archive_restore_and_select_flow() {
-        let conn = setup_conn();
+        let (_dir, conn) = setup_conn();
 
         let a = create_project_impl(
             &conn,
@@ -495,7 +524,7 @@ mod tests {
 
     #[test]
     fn rename_project_updates_name() {
-        let conn = setup_conn();
+        let (_dir, conn) = setup_conn();
 
         let created = create_project_impl(
             &conn,
@@ -516,6 +545,18 @@ mod tests {
         .expect("rename project");
 
         assert_eq!(renamed.name, "New");
+    }
+
+    #[test]
+    fn normalize_selected_directory_returns_none_for_cancelled_picker() {
+        let normalized = normalize_selected_directory(None);
+        assert_eq!(normalized, None);
+    }
+
+    #[test]
+    fn normalize_selected_directory_returns_string_for_selected_path() {
+        let normalized = normalize_selected_directory(Some(FilePath::Path(PathBuf::from("/tmp/storik"))));
+        assert_eq!(normalized, Some("/tmp/storik".to_string()));
     }
 
     #[test]

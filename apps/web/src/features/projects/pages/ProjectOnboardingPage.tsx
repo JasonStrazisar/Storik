@@ -4,13 +4,34 @@ import { useCreateProject } from "../hooks/useProjectMutations"
 import type { CreateProjectPayload } from "@storik/shared"
 import { Input } from "../../../components/ui/Input"
 import { Button } from "../../../components/ui/Button"
+import { desktopClient } from "../infrastructure/desktopClient"
 
 export function ProjectOnboardingPage() {
   const [name, setName] = useState("")
   const [path, setPath] = useState("")
+  const [isPickingPath, setIsPickingPath] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const createProject = useCreateProject()
   const navigate = useNavigate()
+
+  const handlePickPath = async () => {
+    if (createProject.isPending || isPickingPath) {
+      return
+    }
+
+    setIsPickingPath(true)
+    try {
+      const selectedPath = await desktopClient.pickProjectDirectory()
+      if (selectedPath) {
+        setPath(selectedPath)
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to open project directory picker"
+      setErrorMessage(message)
+    } finally {
+      setIsPickingPath(false)
+    }
+  }
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -63,10 +84,12 @@ export function ProjectOnboardingPage() {
                 data-testid="project-path-input"
                 type="text"
                 value={path}
-                onChange={(event) => setPath(event.target.value)}
+                readOnly
+                onClick={handlePickPath}
                 placeholder="Absolute project path"
                 required
-                disabled={createProject.isPending}
+                disabled={createProject.isPending || isPickingPath}
+                className="cursor-pointer"
               />
             </div>
             <Button data-testid="submit-button" type="submit" disabled={createProject.isPending}>
