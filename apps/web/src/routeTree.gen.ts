@@ -9,9 +9,15 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as HarnessRouteImport } from './routes/harness'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProjectsArchivedRouteImport } from './routes/projects/archived'
 
+const HarnessRoute = HarnessRouteImport.update({
+  id: '/harness',
+  path: '/harness',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -25,32 +31,43 @@ const ProjectsArchivedRoute = ProjectsArchivedRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/harness': typeof HarnessRoute
   '/projects/archived': typeof ProjectsArchivedRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/harness': typeof HarnessRoute
   '/projects/archived': typeof ProjectsArchivedRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/harness': typeof HarnessRoute
   '/projects/archived': typeof ProjectsArchivedRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/projects/archived'
+  fullPaths: '/' | '/harness' | '/projects/archived'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/projects/archived'
-  id: '__root__' | '/' | '/projects/archived'
+  to: '/' | '/harness' | '/projects/archived'
+  id: '__root__' | '/' | '/harness' | '/projects/archived'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  HarnessRoute: typeof HarnessRoute
   ProjectsArchivedRoute: typeof ProjectsArchivedRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/harness': {
+      id: '/harness'
+      path: '/harness'
+      fullPath: '/harness'
+      preLoaderRoute: typeof HarnessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -70,6 +87,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  HarnessRoute: HarnessRoute,
   ProjectsArchivedRoute: ProjectsArchivedRoute,
 }
 export const routeTree = rootRouteImport

@@ -44,6 +44,7 @@ describe("ProjectSelector", () => {
     render(<ProjectSelector />)
     expect(screen.getByText("Alpha")).toBeInTheDocument()
     expect(screen.getByText("Beta")).toBeInTheDocument()
+    expect(screen.getByTestId("harness-link")).toBeInTheDocument()
   })
 
   it("shows loading state", () => {

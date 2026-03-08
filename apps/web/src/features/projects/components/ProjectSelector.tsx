@@ -102,6 +102,10 @@ export function ProjectSelector() {
         <a href="/projects/archived" data-testid="archived-link">
           View Archived Projects
         </a>
+        <br />
+        <a href="/harness" data-testid="harness-link">
+          Harness Dashboard
+        </a>
       </nav>
     </div>
   )
