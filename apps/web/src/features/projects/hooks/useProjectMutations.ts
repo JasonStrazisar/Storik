@@ -1,102 +1,73 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import type {
-  CreateProjectPayload,
-  RenameProjectPayload,
-  SelectProjectPayload,
-  ArchiveProjectPayload,
-  RestoreProjectPayload,
-} from "@storik/shared"
+import type { CreateProjectPayload, SelectProjectPayload } from "@storik/shared"
 
-export const useCreateProject = () => {
+export function useCreateProject() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (payload: CreateProjectPayload) => {
-      const res = await fetch("/api/project/create", {
+      const res = await fetch("/api/projects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       })
-      if (!res.ok) {
-        const error = await res.json()
-        throw new Error(error.message || "Create failed")
-      }
+      if (!res.ok) throw new Error("Failed to create project")
       return res.json()
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["projects"] })
+      queryClient.invalidateQueries({ queryKey: ["activeProject"] })
     },
   })
 }
 
-export const useSelectProject = () => {
+export function useSelectProject() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (payload: SelectProjectPayload) => {
-      const res = await fetch("/api/project/select", {
-        method: "POST",
+      const res = await fetch("/api/projects/active", {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       })
-      if (!res.ok) throw new Error("Select failed")
+      if (!res.ok) throw new Error("Failed to select project")
       return res.json()
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["projects", "active"] })
-      queryClient.invalidateQueries({ queryKey: ["projects", "list"] })
+      queryClient.invalidateQueries({ queryKey: ["activeProject"] })
     },
   })
 }
 
-export const useRenameProject = () => {
+export function useArchiveProject() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (payload: RenameProjectPayload) => {
-      const res = await fetch("/api/project/rename", {
+    mutationFn: async (payload: { id: string }) => {
+      const res = await fetch(`/api/projects/${payload.id}/archive`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
       })
-      if (!res.ok) throw new Error("Rename failed")
+      if (!res.ok) throw new Error("Failed to archive project")
       return res.json()
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["projects"] })
+      queryClient.invalidateQueries({ queryKey: ["activeProject"] })
     },
   })
 }
 
-export const useArchiveProject = () => {
+export function useRestoreProject() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (payload: ArchiveProjectPayload) => {
-      const res = await fetch("/api/project/archive", {
+    mutationFn: async (payload: { id: string }) => {
+      const res = await fetch(`/api/projects/${payload.id}/restore`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
       })
-      if (!res.ok) throw new Error("Archive failed")
+      if (!res.ok) throw new Error("Failed to restore project")
       return res.json()
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["projects"] })
-    },
-  })
-}
-
-export const useRestoreProject = () => {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: async (payload: RestoreProjectPayload) => {
-      const res = await fetch("/api/project/restore", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      })
-      if (!res.ok) throw new Error("Restore failed")
-      return res.json()
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["projects"] })
+      queryClient.invalidateQueries({ queryKey: ["activeProject"] })
     },
   })
 }
