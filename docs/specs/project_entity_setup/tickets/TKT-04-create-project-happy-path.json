@@ -1,0 +1,19 @@
+{
+  "what": "Implement CreateProject command handler for valid inputs, persisting the new project and setting it as active in the same successful command execution path.",
+  "where": [
+    { "path": "apps/api/src/features/projects/application/commands/CreateProject.ts", "description": "Create command type and handler orchestrating domain creation and repository save." },
+    { "path": "apps/api/src/features/projects/application/commands/CreateProject.test.ts", "description": "Add integration-style command tests using in-memory ports." },
+    { "path": "apps/api/src/features/projects/application/index.ts", "description": "Export command handler for route layer consumption." }
+  ],
+  "acceptance": [
+    { "type": "happy_path", "given": "A valid create command with unique path and valid validator result", "when": "handleCreateProject is executed", "then": "Exactly one project is saved and returned as active with updated lastUsedAt." },
+    { "type": "error_case", "given": "A validator result marked invalid", "when": "handleCreateProject is executed", "then": "No project is saved and the handler returns a typed create failure." }
+  ],
+  "nonGoals": ["No full error matrix coverage beyond one invalid path guard", "No HTTP endpoint implementation"],
+  "patterns": [
+    { "name": "CQRS Command Handler", "reference": "ARCHITECTURE.md -> section 4, command mutates state" },
+    { "name": "Use-case Orchestration", "reference": "clean architecture skill: usecase orchestrates entities and ports" }
+  ],
+  "context": "This tracer-bullet command proves end-to-end project creation flow works before expanding edge-case coverage.",
+  "technicalNotes": "Write one failing test first and pass it with minimal orchestration code. Merge-safe: isolated command file plus tests and exports. Models: Codex gpt-5.2-codex (medium), Claude Sonnet 4.6 (medium)."
+}

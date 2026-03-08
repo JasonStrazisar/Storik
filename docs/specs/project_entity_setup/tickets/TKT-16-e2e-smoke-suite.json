@@ -1,0 +1,19 @@
+{
+  "what": "Create deterministic Playwright smoke tests validating full Project lifecycle across API and Web: first onboarding create, project switch, archive/restore, and invalid-path activation guard.",
+  "where": [
+    { "path": "e2e/project-smoke.spec.ts", "description": "Add end-to-end scenarios for core project lifecycle behavior." },
+    { "path": "e2e/helpers/project-fixtures.ts", "description": "Add reusable test fixtures/setup for project state preconditions." },
+    { "path": "e2e/README.md", "description": "Document exact test preconditions and execution command for contributors." }
+  ],
+  "acceptance": [
+    { "type": "happy_path", "given": "A clean app state with no project", "when": "E2E suite runs onboarding create and project switch scenarios", "then": "All targeted flows pass with stable selectors and no flaky retries." },
+    { "type": "error_case", "given": "A project marked invalid path in prepared fixture", "when": "E2E suite attempts to activate that project", "then": "UI blocks activation and asserts explicit invalid-path feedback." }
+  ],
+  "nonGoals": ["No exhaustive UI visual testing", "No performance benchmarking"],
+  "patterns": [
+    { "name": "Behavior-first Testing", "reference": "tdd skill guidance: public behavior over implementation details" },
+    { "name": "Critical Path Coverage", "reference": "project-brief.md acceptance criteria" }
+  ],
+  "context": "An integrated smoke suite prevents regressions when API and Web evolve independently across many small tickets.",
+  "technicalNotes": "Write one failing e2e at a time and stabilize selectors before adding next scenario. Merge-safe: add e2e-only files and avoid touching production code unless test reveals real bug. Models: Codex gpt-5.3-codex (high), Claude Opus 4.6 (high)."
+}

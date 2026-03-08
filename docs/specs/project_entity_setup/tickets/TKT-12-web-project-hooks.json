@@ -1,0 +1,19 @@
+{
+  "what": "Implement web hooks for project queries and mutations with strict CQRS separation so components never perform direct fetch calls and rely on typed hook interfaces only.",
+  "where": [
+    { "path": "apps/web/src/features/projects/hooks/useProjectQueries.ts", "description": "Add hooks for active project, project list, and archived project list." },
+    { "path": "apps/web/src/features/projects/hooks/useProjectMutations.ts", "description": "Add hooks for create/select/rename/archive/restore with deterministic invalidation." },
+    { "path": "apps/web/src/features/projects/hooks/projects.hooks.test.tsx", "description": "Add hook behavior tests for success, error, and cache update scenarios." }
+  ],
+  "acceptance": [
+    { "type": "happy_path", "given": "A component calling create mutation hook with valid payload", "when": "Mutation succeeds", "then": "Queries for active/list are invalidated and reflect new active project data." },
+    { "type": "error_case", "given": "A mutation returning duplicate-path error", "when": "Create hook is called", "then": "Hook exposes typed error state and does not mutate cached project list optimistically." }
+  ],
+  "nonGoals": ["No onboarding UI rendering", "No route tree changes"],
+  "patterns": [
+    { "name": "Web Adapter Boundary", "reference": "ARCHITECTURE.md section 2 components call hooks, never fetch directly" },
+    { "name": "CQRS in Web", "reference": "ARCHITECTURE.md section 4 query vs mutation hook separation" }
+  ],
+  "context": "Reusable hooks are required to keep UI logic thin, testable, and aligned with transport contracts.",
+  "technicalNotes": "Keep read and write hooks in separate files to preserve CQRS clarity. Merge-safe: add new feature hooks + tests without changing existing routeTree.gen.ts. Models: Codex gpt-5.1-codex (low), Claude Haiku 4.5 (low)."
+}

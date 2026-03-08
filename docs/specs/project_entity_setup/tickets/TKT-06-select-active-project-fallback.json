@@ -1,0 +1,19 @@
+{
+  "what": "Implement SelectActiveProject command with path revalidation and deterministic fallback logic when selected/current project is archived or invalid.",
+  "where": [
+    { "path": "apps/api/src/features/projects/application/commands/SelectActiveProject.ts", "description": "Add selection handler with validator call and fallback algorithm." },
+    { "path": "apps/api/src/features/projects/application/commands/SelectActiveProject.test.ts", "description": "Add matrix tests for valid selection, invalid path, archived project, and no fallback candidate." },
+    { "path": "apps/api/src/features/projects/application/queries/GetActiveProject.ts", "description": "Ensure active query respects fallback result contract." }
+  ],
+  "acceptance": [
+    { "type": "happy_path", "given": "A selectable project with valid current path", "when": "SelectActiveProject runs", "then": "That project becomes active and lastUsedAt is updated in persisted state." },
+    { "type": "error_case", "given": "A selected project whose path validator returns invalid and no alternative valid project exists", "when": "SelectActiveProject runs", "then": "Activation is rejected and the result indicates onboarding-required state explicitly." }
+  ],
+  "nonGoals": ["No sidebar UI", "No archive admin rendering"],
+  "patterns": [
+    { "name": "CQRS Command + Query Consistency", "reference": "ARCHITECTURE.md -> section 4 command/query separation" },
+    { "name": "Hexagonal Revalidation", "reference": "ARCHITECTURE.md -> section 2 validators hidden behind port" }
+  ],
+  "context": "Project activation governs entire app context and must never resolve to an invalid or archived project.",
+  "technicalNotes": "Use deterministic fallback ordering documented in tests; avoid implicit random ordering. Merge-safe: isolated command/query + tests only. Models: Codex gpt-5.3-codex (high), Claude Opus 4.6 (high)."
+}

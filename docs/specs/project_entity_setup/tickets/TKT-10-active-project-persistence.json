@@ -1,0 +1,19 @@
+{
+  "what": "Persist active project reference and lastUsedAt updates so startup can restore the latest valid active project while respecting archive and invalid-path rules.",
+  "where": [
+    { "path": "apps/api/src/features/projects/infrastructure/SqliteProjectRepository.ts", "description": "Add methods/queries for setting and reading active project metadata." },
+    { "path": "apps/api/src/features/projects/application/queries/GetActiveProject.ts", "description": "Ensure active query applies validity/fallback rules from persisted metadata." },
+    { "path": "apps/api/src/features/projects/infrastructure/SqliteProjectRepository.active.test.ts", "description": "Add integration tests for startup restore and lastUsedAt updates." }
+  ],
+  "acceptance": [
+    { "type": "happy_path", "given": "Two valid projects where one is selected last", "when": "GetActiveProject is called after restart simulation", "then": "The last selected valid project is returned as active." },
+    { "type": "error_case", "given": "Persisted active project is archived or fails path validation", "when": "GetActiveProject is called", "then": "A valid fallback is returned or explicit onboarding-required state is returned when none exists." }
+  ],
+  "nonGoals": ["No sidebar rendering", "No direct filesystem implementation in query"],
+  "patterns": [
+    { "name": "CQRS Query Responsibility", "reference": "ARCHITECTURE.md section 4 queries are read-only and deterministic" },
+    { "name": "Hexagonal Validator Port", "reference": "ARCHITECTURE.md section 2 infra checks behind ports" }
+  ],
+  "context": "Without persisted active state, users lose context every launch and onboarding/selector flows become inconsistent.",
+  "technicalNotes": "Keep fallback algorithm deterministic and tested. Merge-safe: augment repository/query behavior with isolated tests; avoid changing route layer here. Models: Codex gpt-5.2-codex (medium), Claude Sonnet 4.6 (medium)."
+}

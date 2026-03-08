@@ -1,0 +1,19 @@
+{
+  "what": "Implement archive administration view with restore action and explicit invalid-path status rendering that prevents activating invalid projects from selector interactions.",
+  "where": [
+    { "path": "apps/web/src/features/projects/pages/ArchivedProjectsPage.tsx", "description": "Render archived project list and restore actions." },
+    { "path": "apps/web/src/features/projects/components/ProjectStatusBadge.tsx", "description": "Render explicit invalid-path status in project lists/selectors." },
+    { "path": "apps/web/src/features/projects/pages/ArchivedProjectsPage.test.tsx", "description": "Add tests for restore flow and invalid activation guard behavior." }
+  ],
+  "acceptance": [
+    { "type": "happy_path", "given": "An archived project entry", "when": "User clicks restore", "then": "Project is removed from archived list and appears in active catalog after refresh." },
+    { "type": "error_case", "given": "A project flagged as invalid path", "when": "User attempts activation", "then": "Activation action is blocked and UI shows explicit non-activable status." }
+  ],
+  "nonGoals": ["No hard-delete/purge", "No machine path scanning"],
+  "patterns": [
+    { "name": "State-specific UI", "reference": "project-brief.md section 7 UX states" },
+    { "name": "Safe Lifecycle UX", "reference": "project-adr.md sections 9 and 11" }
+  ],
+  "context": "Users need recovery operations for archived projects and clear handling of broken repo paths.",
+  "technicalNotes": "Status must be derived from API data, not local heuristics. Merge-safe: isolated page/components/tests in projects feature. Models: Codex gpt-5.3-codex (high), Claude Opus 4.6 (high)."
+}

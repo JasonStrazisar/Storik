@@ -1,0 +1,19 @@
+{
+  "what": "Create SQLite-backed ProjectRepository adapter with schema, row mapping, and unique path enforcement for create/read/list/archive/restore data operations.",
+  "where": [
+    { "path": "apps/api/src/features/projects/infrastructure/SqliteProjectRepository.ts", "description": "Implement repository adapter methods using SQLite statements and typed mapping." },
+    { "path": "apps/api/src/features/projects/infrastructure/SqliteProjectRepository.test.ts", "description": "Add integration tests against real SQLite test database." },
+    { "path": "apps/api/src/features/projects/infrastructure/migrations/001_projects.sql", "description": "Create projects table with required columns and unique constraint on canonical path." }
+  ],
+  "acceptance": [
+    { "type": "happy_path", "given": "A valid project entity", "when": "Repository save and then find/list methods are executed", "then": "Returned project data matches persisted values including timestamps and archive state." },
+    { "type": "error_case", "given": "Two create operations with same canonical path", "when": "Second save is attempted", "then": "Adapter returns duplicate-path repository error and first record remains unchanged." }
+  ],
+  "nonGoals": ["No route handlers", "No UI", "No e2e tests"],
+  "patterns": [
+    { "name": "Infrastructure Adapter", "reference": "ARCHITECTURE.md section 2 adapter implementation in infrastructure" },
+    { "name": "Repository Pattern", "reference": "ARCHITECTURE.md section 3 repository interface + concrete implementation" }
+  ],
+  "context": "Application logic needs durable project storage and deterministic constraints to behave consistently across sessions.",
+  "technicalNotes": "Use integration tests first to lock SQL behavior. Ensure unique path constraint is database-level, not only application-level. Merge-safe: migration + adapter + tests only. Models: Codex gpt-5.3-codex (high), Claude Opus 4.6 (high)."
+}

@@ -1,0 +1,19 @@
+{
+  "what": "Define cross-boundary Project contracts in shared package with strict runtime validation for project identity, create/select/rename/archive/restore payloads, and list/active query responses.",
+  "where": [
+    { "path": "packages/shared/src/project.ts", "description": "Add Project schemas/types exported for API and Web to ensure identical wire contracts." },
+    { "path": "packages/shared/src/index.ts", "description": "Export every new Project schema/type as stable public API for workspace packages." },
+    { "path": "packages/shared/src/project.test.ts", "description": "Add schema tests proving accepted and rejected payloads." }
+  ],
+  "acceptance": [
+    { "type": "happy_path", "given": "A valid create payload with trimmed name length 1..80 and absolute path string", "when": "The payload is parsed through shared schema", "then": "Parsing succeeds and returns typed data with no unknown keys." },
+    { "type": "error_case", "given": "A payload with empty name or missing required field", "when": "The payload is parsed through shared schema", "then": "Parsing fails with deterministic validation errors referencing the invalid field." }
+  ],
+  "nonGoals": ["No domain entity behavior", "No API routes", "No database adapter"],
+  "patterns": [
+    { "name": "Feature Slices", "reference": "ARCHITECTURE.md -> section 1, shared contracts consumed by features only via public exports" },
+    { "name": "DDD Boundary DTO", "reference": "ARCHITECTURE.md -> section 3, schemas in shared for API/web boundary crossing" }
+  ],
+  "context": "API and Web cannot evolve safely without a single typed contract for Project payloads and responses.",
+  "technicalNotes": "TDD order is mandatory: add failing schema tests first, then minimal schema code. Merge-safe: add new file and exports only; avoid modifying unrelated shared symbols. Models: Codex gpt-5.1-codex (low), Claude Haiku 4.5 (low)."
+}

@@ -1,0 +1,19 @@
+{
+  "what": "Extend CreateProject command to reject duplicate path, non-absolute path, non-existing path, and non-git repository path with deterministic typed error mapping.",
+  "where": [
+    { "path": "apps/api/src/features/projects/application/commands/CreateProject.ts", "description": "Add explicit failure branches for each invalid create condition." },
+    { "path": "apps/api/src/features/projects/application/commands/CreateProject.test.ts", "description": "Add one failing test per invalid create condition." },
+    { "path": "apps/api/src/features/projects/application/errors/ProjectCommandError.ts", "description": "Define stable command error codes for route/UI mapping." }
+  ],
+  "acceptance": [
+    { "type": "happy_path", "given": "A valid create command with unique valid git path", "when": "CreateProject is executed", "then": "The command still succeeds and produces the same result shape as TKT-04." },
+    { "type": "error_case", "given": "A create command whose path already exists in repository", "when": "CreateProject is executed", "then": "The command fails with a duplicate-path error code and no state mutation." }
+  ],
+  "nonGoals": ["No router status code mapping", "No UI error message wording"],
+  "patterns": [
+    { "name": "CQRS Error Determinism", "reference": "ARCHITECTURE.md -> section 4, commands should produce predictable outcomes" },
+    { "name": "TDD Vertical Slices", "reference": "tdd skill anti-horizontal guidance" }
+  ],
+  "context": "Creation without strict error branches will generate inconsistent behavior between API and UI and break predictable onboarding UX.",
+  "technicalNotes": "Each invalid condition must be proven by a dedicated failing test before implementation. Merge-safe: only command/error files and command tests are touched. Models: Codex gpt-5.2-codex (medium), Claude Sonnet 4.6 (medium)."
+}

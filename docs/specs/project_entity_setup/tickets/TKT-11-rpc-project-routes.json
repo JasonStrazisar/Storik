@@ -1,0 +1,19 @@
+{
+  "what": "Add RPC transport endpoints under /project/* that validate request payloads, call corresponding application handlers, and map typed application errors into stable HTTP responses.",
+  "where": [
+    { "path": "apps/api/src/features/projects/router.ts", "description": "Define /project/create, /project/rename, /project/select, /project/archive, /project/restore, /project/list, /project/list-archived, /project/active." },
+    { "path": "apps/api/src/main.ts", "description": "Mount projects router in composition root without embedding business logic." },
+    { "path": "apps/api/src/features/projects/router.test.ts", "description": "Add route-level tests for request validation, success responses, and error mappings." }
+  ],
+  "acceptance": [
+    { "type": "happy_path", "given": "A valid create request payload", "when": "POST /project/create is called", "then": "Response status and body match contract and include created active project data." },
+    { "type": "error_case", "given": "A request payload failing schema validation", "when": "Any /project/* endpoint is called", "then": "Endpoint returns deterministic validation failure response without invoking command/query handler." }
+  ],
+  "nonGoals": ["No UI hook creation", "No domain rule implementation"],
+  "patterns": [
+    { "name": "Thin Adapter", "reference": "ARCHITECTURE.md section 4 routes contain no business logic" },
+    { "name": "Composition Root Wiring", "reference": "ARCHITECTURE.md section 2 main.ts wires adapters" }
+  ],
+  "context": "Web cannot consume project use-cases until stable transport adapters expose handlers through HTTP.",
+  "technicalNotes": "Perform schema validation at boundary and delegate immediately. Merge-safe: add feature router and mount only; do not alter unrelated routes. Models: Codex gpt-5.2-codex (medium), Claude Sonnet 4.6 (medium)."
+}

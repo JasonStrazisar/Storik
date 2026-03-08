@@ -1,0 +1,19 @@
+{
+  "what": "Implement ArchiveProject and RestoreProject commands using soft-delete semantics with deletedAt timestamps and explicit behavior when archived project was active.",
+  "where": [
+    { "path": "apps/api/src/features/projects/application/commands/ArchiveProject.ts", "description": "Add archive command handler setting deletedAt and handling active-project side effects." },
+    { "path": "apps/api/src/features/projects/application/commands/RestoreProject.ts", "description": "Add restore command handler clearing deletedAt." },
+    { "path": "apps/api/src/features/projects/application/commands/ArchiveRestoreProject.test.ts", "description": "Add tests for archive and restore including active fallback interactions." }
+  ],
+  "acceptance": [
+    { "type": "happy_path", "given": "An active non-archived project", "when": "ArchiveProject runs", "then": "Project receives deletedAt timestamp and active context is reassigned to a valid fallback or onboarding-required state." },
+    { "type": "error_case", "given": "A restore command targeting a project id that does not exist", "when": "RestoreProject runs", "then": "The command returns a not-found error and no other project state changes." }
+  ],
+  "nonGoals": ["No hard delete", "No archive UI"],
+  "patterns": [
+    { "name": "Soft Delete Lifecycle", "reference": "project-adr.md section 8 persistence strategy" },
+    { "name": "Command Side-effect Control", "reference": "ARCHITECTURE.md section 4 command handlers" }
+  ],
+  "context": "Archive/restore is required for safe lifecycle management and reversible operations in local project catalog.",
+  "technicalNotes": "Persist deletedAt and avoid physical deletion. Merge-safe: add dedicated command files and tests, avoid touching unrelated feature routers. Models: Codex gpt-5.2-codex (medium), Claude Sonnet 4.6 (medium)."
+}

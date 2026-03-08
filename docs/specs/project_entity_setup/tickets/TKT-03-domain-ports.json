@@ -1,0 +1,19 @@
+{
+  "what": "Define ProjectRepository and PathValidation ports with exact method contracts needed by project commands and queries, including deterministic return and error semantics.",
+  "where": [
+    { "path": "apps/api/src/features/projects/domain/ProjectRepository.ts", "description": "Add repository interface with methods for create/read/list/select/archive/restore operations." },
+    { "path": "apps/api/src/features/projects/application/PathValidationPort.ts", "description": "Add path validation interface used by create/select flows." },
+    { "path": "apps/api/src/features/projects/application/ports.contract.test.ts", "description": "Add contract tests with in-memory fakes proving port behavior assumptions." }
+  ],
+  "acceptance": [
+    { "type": "happy_path", "given": "An in-memory repository fake implementing all required methods", "when": "Application tests execute create and list operations", "then": "Contracts are sufficient to complete use-cases without hidden infra dependencies." },
+    { "type": "error_case", "given": "A fake path validator returning invalid for a path", "when": "Create/select use-case consumes the port", "then": "Use-case receives explicit invalid result and does not continue mutation path." }
+  ],
+  "nonGoals": ["No SQL implementation", "No router wiring", "No UI hooks"],
+  "patterns": [
+    { "name": "Ports and Adapters", "reference": "ARCHITECTURE.md -> section 2, ports declared inside domain/application" },
+    { "name": "CQRS Preparation", "reference": "ARCHITECTURE.md -> section 4, command/query handlers depend on ports" }
+  ],
+  "context": "Stable port contracts prevent leaking infrastructure assumptions into core logic and enable test-first implementation.",
+  "technicalNotes": "Return typed outcomes rather than implicit null/undefined branches. Merge-safe: add interfaces and tests only, no infra classes yet. Models: Codex gpt-5.1-codex (low), Claude Haiku 4.5 (low)."
+}

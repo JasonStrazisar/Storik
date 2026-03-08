@@ -1,0 +1,19 @@
+{
+  "what": "Implement Project aggregate with explicit invariant enforcement: name trim/length validation, immutable path after creation, and deterministic archive/restore transitions.",
+  "where": [
+    { "path": "apps/api/src/features/projects/domain/Project.ts", "description": "Create Project aggregate root with constructor/factory and transition methods." },
+    { "path": "apps/api/src/features/projects/domain/Project.errors.ts", "description": "Define typed domain errors for invariant violations." },
+    { "path": "apps/api/src/features/projects/domain/Project.test.ts", "description": "Add behavior tests for creation, rename, archive, restore, and forbidden path mutation." }
+  ],
+  "acceptance": [
+    { "type": "happy_path", "given": "A valid name and path at creation time", "when": "Project.create is called", "then": "A Project instance is returned with stable id/path and initialized timestamps." },
+    { "type": "error_case", "given": "An existing Project instance and a request to change path", "when": "A path update is attempted", "then": "The operation fails with a domain error explicitly stating path immutability." }
+  ],
+  "nonGoals": ["No repository calls", "No HTTP mapping", "No filesystem checks"],
+  "patterns": [
+    { "name": "DDD Aggregate Root", "reference": "ARCHITECTURE.md -> section 3, entity owns invariants" },
+    { "name": "Hexagonal Isolation", "reference": "ARCHITECTURE.md -> section 2, domain has zero infra imports" }
+  ],
+  "context": "Business rules must be enforceable in one place to prevent invalid project states across commands.",
+  "technicalNotes": "Use pure domain code with no Node/DB dependencies. TDD vertical slices only. Merge-safe: introduce new project domain files without touching existing features. Models: Codex gpt-5.2-codex (medium), Claude Sonnet 4.6 (medium)."
+}

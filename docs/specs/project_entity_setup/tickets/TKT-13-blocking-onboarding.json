@@ -1,0 +1,19 @@
+{
+  "what": "Implement blocking onboarding state that is enforced whenever no valid non-archived project exists, with exactly two manual inputs: name and path.",
+  "where": [
+    { "path": "apps/web/src/features/projects/pages/ProjectOnboardingPage.tsx", "description": "Create onboarding page component with name/path fields and create action." },
+    { "path": "apps/web/src/routes/__root.tsx", "description": "Gate app rendering by active-project availability and route to onboarding state when required." },
+    { "path": "apps/web/src/features/projects/pages/ProjectOnboardingPage.test.tsx", "description": "Add tests for blocking behavior and successful creation flow transition." }
+  ],
+  "acceptance": [
+    { "type": "happy_path", "given": "No existing project and a valid form submission", "when": "User submits onboarding form", "then": "Project is created, set active, and app navigates to regular content." },
+    { "type": "error_case", "given": "No existing project and invalid path submission", "when": "User submits onboarding form", "then": "Onboarding remains visible and a concrete validation error is displayed." }
+  ],
+  "nonGoals": ["No repo auto-discovery list", "No sidebar selector behavior"],
+  "patterns": [
+    { "name": "UI as Adapter", "reference": "ARCHITECTURE.md section 2 web components consume hooks only" },
+    { "name": "Feature Slice Isolation", "reference": "ARCHITECTURE.md section 1 projects UI under features/projects" }
+  ],
+  "context": "The app must never allow operation without a valid active project context.",
+  "technicalNotes": "Do not add extra onboarding fields. Keep manual path input only. Merge-safe: create new projects feature page/tests and minimal root gating logic. Models: Codex gpt-5.2-codex (medium), Claude Sonnet 4.6 (medium)."
+}

@@ -1,0 +1,19 @@
+{
+  "what": "Implement RenameProject command that updates only Project.name and updatedAt while preserving Project.path immutability and existing archive state.",
+  "where": [
+    { "path": "apps/api/src/features/projects/application/commands/RenameProject.ts", "description": "Create rename command type and handler using domain rename operation." },
+    { "path": "apps/api/src/features/projects/application/commands/RenameProject.test.ts", "description": "Add tests for valid rename and invalid-name rejection." },
+    { "path": "apps/api/src/features/projects/domain/Project.ts", "description": "Expose strict rename behavior if not already present." }
+  ],
+  "acceptance": [
+    { "type": "happy_path", "given": "An existing project and a valid new name", "when": "RenameProject runs", "then": "Project name changes, updatedAt changes, and path remains exactly unchanged." },
+    { "type": "error_case", "given": "A rename request with name length 0 after trim", "when": "RenameProject runs", "then": "The command fails with validation error and no persistence update occurs." }
+  ],
+  "nonGoals": ["No path update command", "No UI rename dialog"],
+  "patterns": [
+    { "name": "DDD Invariant Enforcement", "reference": "ARCHITECTURE.md -> section 3 entity owns invariant" },
+    { "name": "CQRS Mutation Isolation", "reference": "ARCHITECTURE.md -> section 4" }
+  ],
+  "context": "Users need editable display naming without compromising repository binding rules.",
+  "technicalNotes": "Keep command narrow and explicit; do not add generic update command. Merge-safe: rename command/tests only. Models: Codex gpt-5.1-codex (low), Claude Haiku 4.5 (low)."
+}

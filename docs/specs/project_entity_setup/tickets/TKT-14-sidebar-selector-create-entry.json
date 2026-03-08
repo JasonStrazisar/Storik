@@ -1,0 +1,19 @@
+{
+  "what": "Implement sidebar project selector with active project switching and a create entry that opens the same onboarding flow in cancelable mode without blocking existing context.",
+  "where": [
+    { "path": "apps/web/src/features/projects/components/ProjectSelector.tsx", "description": "Render project list, active indicator, switch action, and create entry." },
+    { "path": "apps/web/src/features/projects/components/ProjectSelector.test.tsx", "description": "Add behavior tests for switching, create entry open, and cancel return." },
+    { "path": "apps/web/src/routes/__root.tsx", "description": "Mount selector in app shell/sidebar context." }
+  ],
+  "acceptance": [
+    { "type": "happy_path", "given": "At least two valid projects", "when": "User selects another project in sidebar", "then": "Active project changes and dependent UI reads the new active context." },
+    { "type": "error_case", "given": "User opens create flow from sidebar and cancels", "when": "Cancel action is triggered", "then": "Previous active context is preserved and no project state mutation occurs." }
+  ],
+  "nonGoals": ["No archive admin table", "No onboarding blocking policy changes"],
+  "patterns": [
+    { "name": "Context Selector UX", "reference": "project-brief.md section 4.2 existing projects" },
+    { "name": "CQRS Hook Usage", "reference": "ARCHITECTURE.md section 4 web query/mutation hook separation" }
+  ],
+  "context": "Users need low-friction project context switching once at least one project exists.",
+  "technicalNotes": "Selector must use hooks; no direct network calls in component. Merge-safe: add component + tests and shell mount only. Models: Codex gpt-5.2-codex (medium), Claude Sonnet 4.6 (medium)."
+}
