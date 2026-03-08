@@ -7,3 +7,4 @@ styled-system/
 coverage/
 playwright-report/
 test-results/
+apps/desktop/src-tauri/target/

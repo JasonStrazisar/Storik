@@ -1,6 +1,6 @@
 # E2E Tests
 
-Playwright end-to-end tests against `http://localhost:5173`.
+Playwright harness for browser-oriented UI checks. Desktop validation is primarily Rust command tests in `apps/desktop`.
 
 ## Commands
 
@@ -9,6 +9,5 @@ Playwright end-to-end tests against `http://localhost:5173`.
 
 ## Notes
 
-- Tests in `tests/` directory
-- Playwright auto-starts API + web via `webServer` config
-- Chromium only by default
+- Current product runtime is Tauri desktop; browser e2e is secondary coverage.
+- Prefer adding/maintaining Rust command tests for desktop behavior and persistence.

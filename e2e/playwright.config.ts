@@ -13,7 +13,7 @@ export default defineConfig({
     { name: "chromium", use: { channel: "chromium" } },
   ],
   webServer: {
-    command: "pnpm --parallel --filter @storik/api --filter @storik/web dev",
+    command: "pnpm --filter @storik/web dev",
     url: "http://localhost:5173",
     reuseExistingServer: !process.env.CI,
     cwd: "..",

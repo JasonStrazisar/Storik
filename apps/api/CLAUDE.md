@@ -1,21 +1,19 @@
-# @storik/api
+# @storik/api (Legacy)
 
-Effect HTTP server on port 3001, SQLite persistence.
+Legacy Effect HTTP backend. Not part of the desktop runtime path.
 
-## Stack
+## Current Role
 
-- `effect`, `@effect/platform`, `@effect/platform-node` for HTTP
-- `@effect/sql` + `@effect/sql-sqlite-node` for database
-- `tsx watch` for dev
-
-## Patterns
-
-- Routes: `HttpRouter.get/post/...` composed with `HttpRouter.empty.pipe(...)`
-- Services: use Effect `Layer` / `Context.Tag` pattern
-- Run with `NodeRuntime.runMain`
-- Errors: use Effect typed errors, never throw
+- Reference implementation for project domain workflows during migration.
+- Useful for comparing legacy REST behavior to desktop Tauri command behavior.
+- Do not introduce new product features here unless explicitly requested.
 
 ## Commands
 
-- `pnpm dev:api` — start with watch mode
-- `pnpm test` — run from monorepo root
+- `pnpm dev:api` — optional legacy watch mode
+- `pnpm test` — run monorepo tests from root
+
+## Notes
+
+- Desktop runtime uses Rust commands in `apps/desktop/src-tauri/src/main.rs`.
+- Frontend no longer depends on `localhost:3001` at runtime.

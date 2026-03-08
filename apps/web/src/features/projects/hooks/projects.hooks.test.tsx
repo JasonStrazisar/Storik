@@ -2,10 +2,26 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { renderHook, waitFor } from "@testing-library/react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import type { ReactNode } from "react"
-import { useCreateProject } from "./useProjectMutations"
-import { useSelectProject } from "./useProjectMutations"
-import { useProjectList } from "./useProjectQueries"
-import { useActiveProject } from "./useProjectQueries"
+import { useCreateProject, useSelectProject } from "./useProjectMutations"
+import { useProjectList, useActiveProject } from "./useProjectQueries"
+
+const listProjectsMock = vi.fn()
+const getActiveProjectMock = vi.fn()
+const createProjectMock = vi.fn()
+const selectActiveProjectMock = vi.fn()
+
+vi.mock("../infrastructure/desktopClient", () => ({
+  desktopClient: {
+    listProjects: () => listProjectsMock(),
+    getActiveProject: () => getActiveProjectMock(),
+    createProject: (payload: unknown) => createProjectMock(payload),
+    selectActiveProject: (payload: unknown) => selectActiveProjectMock(payload),
+    archiveProject: vi.fn(),
+    restoreProject: vi.fn(),
+    renameProject: vi.fn(),
+    listArchivedProjects: vi.fn(),
+  },
+}))
 
 function createWrapper() {
   const queryClient = new QueryClient({
@@ -22,11 +38,8 @@ function createWrapper() {
   }
 }
 
-let fetchMock: ReturnType<typeof vi.fn>
-
 beforeEach(() => {
-  fetchMock = vi.fn()
-  vi.stubGlobal("fetch", fetchMock)
+  vi.clearAllMocks()
 })
 
 afterEach(() => {
@@ -34,11 +47,8 @@ afterEach(() => {
 })
 
 describe("useCreateProject", () => {
-  it("calls correct endpoint with payload", async () => {
-    fetchMock.mockResolvedValueOnce({
-      ok: true,
-      json: () => Promise.resolve({ id: "p1", name: "My Project" }),
-    })
+  it("calls desktop create command with payload", async () => {
+    createProjectMock.mockResolvedValueOnce({ id: "p1", name: "My Project" })
 
     const { wrapper } = createWrapper()
     const { result } = renderHook(() => useCreateProject(), { wrapper })
@@ -47,18 +57,14 @@ describe("useCreateProject", () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
-    expect(fetchMock).toHaveBeenCalledWith("/api/project/create", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: "My Project", path: "/tmp/proj" }),
+    expect(createProjectMock).toHaveBeenCalledWith({
+      name: "My Project",
+      path: "/tmp/proj",
     })
   })
 
   it("invalidates queries on success", async () => {
-    fetchMock.mockResolvedValueOnce({
-      ok: true,
-      json: () => Promise.resolve({ id: "p1" }),
-    })
+    createProjectMock.mockResolvedValueOnce({ id: "p1" })
 
     const { wrapper, queryClient } = createWrapper()
     const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries")
@@ -69,13 +75,11 @@ describe("useCreateProject", () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["projects"] })
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["activeProject"] })
   })
 
   it("rejects with error message on failure", async () => {
-    fetchMock.mockResolvedValueOnce({
-      ok: false,
-      json: () => Promise.resolve({ message: "Name already taken" }),
-    })
+    createProjectMock.mockRejectedValueOnce(new Error("Name already taken"))
 
     const { wrapper } = createWrapper()
     const { result } = renderHook(() => useCreateProject(), { wrapper })
@@ -89,11 +93,8 @@ describe("useCreateProject", () => {
 })
 
 describe("useSelectProject", () => {
-  it("calls correct endpoint", async () => {
-    fetchMock.mockResolvedValueOnce({
-      ok: true,
-      json: () => Promise.resolve({ ok: true }),
-    })
+  it("calls select command", async () => {
+    selectActiveProjectMock.mockResolvedValueOnce({ status: "active", project: { id: "proj-1" } })
 
     const { wrapper } = createWrapper()
     const { result } = renderHook(() => useSelectProject(), { wrapper })
@@ -102,18 +103,11 @@ describe("useSelectProject", () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
-    expect(fetchMock).toHaveBeenCalledWith("/api/project/select", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: "proj-1" }),
-    })
+    expect(selectActiveProjectMock).toHaveBeenCalledWith({ id: "proj-1" })
   })
 
-  it("invalidates both active and list queries on success", async () => {
-    fetchMock.mockResolvedValueOnce({
-      ok: true,
-      json: () => Promise.resolve({ ok: true }),
-    })
+  it("invalidates active and list queries on success", async () => {
+    selectActiveProjectMock.mockResolvedValueOnce({ status: "active", project: { id: "proj-1" } })
 
     const { wrapper, queryClient } = createWrapper()
     const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries")
@@ -123,12 +117,8 @@ describe("useSelectProject", () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
-    expect(invalidateSpy).toHaveBeenCalledWith({
-      queryKey: ["projects", "active"],
-    })
-    expect(invalidateSpy).toHaveBeenCalledWith({
-      queryKey: ["projects", "list"],
-    })
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["activeProject"] })
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["projects"] })
   })
 })
 
@@ -144,10 +134,7 @@ describe("useProjectList", () => {
         updatedAt: "2024-01-01T00:00:00Z",
       },
     ]
-    fetchMock.mockResolvedValueOnce({
-      ok: true,
-      json: () => Promise.resolve(projects),
-    })
+    listProjectsMock.mockResolvedValueOnce(projects)
 
     const { wrapper } = createWrapper()
     const { result } = renderHook(() => useProjectList(), { wrapper })
@@ -160,19 +147,19 @@ describe("useProjectList", () => {
 })
 
 describe("useActiveProject", () => {
-  it("returns active project data", async () => {
+  it("returns active project response", async () => {
     const active = {
-      id: "p1",
-      name: "Main",
-      path: "/main",
       status: "active",
-      createdAt: "2024-01-01T00:00:00Z",
-      updatedAt: "2024-01-01T00:00:00Z",
+      project: {
+        id: "p1",
+        name: "Main",
+        path: "/main",
+        status: "active",
+        createdAt: "2024-01-01T00:00:00Z",
+        updatedAt: "2024-01-01T00:00:00Z",
+      },
     }
-    fetchMock.mockResolvedValueOnce({
-      ok: true,
-      json: () => Promise.resolve(active),
-    })
+    getActiveProjectMock.mockResolvedValueOnce(active)
 
     const { wrapper } = createWrapper()
     const { result } = renderHook(() => useActiveProject(), { wrapper })
@@ -182,16 +169,14 @@ describe("useActiveProject", () => {
     expect(result.current.data).toEqual(active)
   })
 
-  it("throws when fetch fails", async () => {
-    fetchMock.mockResolvedValueOnce({ ok: false, status: 500 })
+  it("throws when command fails", async () => {
+    getActiveProjectMock.mockRejectedValueOnce(new Error("Failed to fetch active project"))
 
     const { wrapper } = createWrapper()
     const { result } = renderHook(() => useActiveProject(), { wrapper })
 
     await waitFor(() => expect(result.current.isError).toBe(true))
 
-    expect(result.current.error?.message).toBe(
-      "Failed to fetch active project"
-    )
+    expect(result.current.error?.message).toBe("Failed to fetch active project")
   })
 })

@@ -1,0 +1,14 @@
+{
+  "name": "@storik/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "check:icon": "sh ./scripts/check-icon-format.sh",
+    "dev": "pnpm run check:icon && PATH=\"$HOME/.cargo/bin:$PATH\" tauri dev",
+    "build": "pnpm run check:icon && PATH=\"$HOME/.cargo/bin:$PATH\" tauri build",
+    "test:rust": "PATH=\"$HOME/.cargo/bin:$PATH\" cargo test --manifest-path src-tauri/Cargo.toml"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.1.0"
+  }
+}

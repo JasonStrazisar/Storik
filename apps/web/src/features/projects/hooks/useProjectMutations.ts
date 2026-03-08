@@ -1,18 +1,16 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import type { CreateProjectPayload, SelectProjectPayload } from "@storik/shared"
+import type {
+  ArchiveProjectPayload,
+  CreateProjectPayload,
+  RestoreProjectPayload,
+  SelectProjectPayload,
+} from "@storik/shared"
+import { desktopClient } from "../infrastructure/desktopClient"
 
 export function useCreateProject() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (payload: CreateProjectPayload) => {
-      const res = await fetch("/api/projects", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      })
-      if (!res.ok) throw new Error("Failed to create project")
-      return res.json()
-    },
+    mutationFn: (payload: CreateProjectPayload) => desktopClient.createProject(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["projects"] })
       queryClient.invalidateQueries({ queryKey: ["activeProject"] })
@@ -23,17 +21,10 @@ export function useCreateProject() {
 export function useSelectProject() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (payload: SelectProjectPayload) => {
-      const res = await fetch("/api/projects/active", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      })
-      if (!res.ok) throw new Error("Failed to select project")
-      return res.json()
-    },
+    mutationFn: (payload: SelectProjectPayload) => desktopClient.selectActiveProject(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["activeProject"] })
+      queryClient.invalidateQueries({ queryKey: ["projects"] })
     },
   })
 }
@@ -41,16 +32,11 @@ export function useSelectProject() {
 export function useArchiveProject() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (payload: { id: string }) => {
-      const res = await fetch(`/api/projects/${payload.id}/archive`, {
-        method: "POST",
-      })
-      if (!res.ok) throw new Error("Failed to archive project")
-      return res.json()
-    },
+    mutationFn: (payload: ArchiveProjectPayload) => desktopClient.archiveProject(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["projects"] })
       queryClient.invalidateQueries({ queryKey: ["activeProject"] })
+      queryClient.invalidateQueries({ queryKey: ["projects", "archived"] })
     },
   })
 }
@@ -58,16 +44,11 @@ export function useArchiveProject() {
 export function useRestoreProject() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (payload: { id: string }) => {
-      const res = await fetch(`/api/projects/${payload.id}/restore`, {
-        method: "POST",
-      })
-      if (!res.ok) throw new Error("Failed to restore project")
-      return res.json()
-    },
+    mutationFn: (payload: RestoreProjectPayload) => desktopClient.restoreProject(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["projects"] })
       queryClient.invalidateQueries({ queryKey: ["activeProject"] })
+      queryClient.invalidateQueries({ queryKey: ["projects", "archived"] })
     },
   })
 }

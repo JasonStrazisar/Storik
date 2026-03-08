@@ -93,3 +93,18 @@ export const ProjectActiveListResponse = Schema.Array(ActiveProject)
 export type ProjectActiveListResponse = Schema.Schema.Type<
   typeof ProjectActiveListResponse
 >
+
+export const ActiveProjectResponse = Schema.Union(
+  Schema.Struct({
+    status: Schema.Literal("active"),
+    project: Project,
+  }),
+  Schema.Struct({
+    status: Schema.Literal("onboarding-required"),
+  })
+)
+export type ActiveProjectResponse = Schema.Schema.Type<typeof ActiveProjectResponse>
+export type DesktopCommandError = {
+  code?: string
+  message: string
+}
