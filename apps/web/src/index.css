@@ -1,1 +1,25 @@
-@layer reset, base, tokens, recipes, utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-brand-25: #f5f8ff;
+  --color-brand-50: #eff4ff;
+  --color-brand-100: #d1e0ff;
+  --color-brand-200: #b2ccff;
+  --color-brand-300: #84adff;
+  --color-brand-400: #528bff;
+  --color-brand-500: #2970ff;
+  --color-brand-600: #155eef;
+  --color-brand-700: #004eeb;
+  --color-brand-800: #0040c1;
+  --color-brand-900: #00359e;
+  --color-brand-950: #002266;
+}
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}

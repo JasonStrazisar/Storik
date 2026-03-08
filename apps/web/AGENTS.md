@@ -12,7 +12,9 @@ React 19 + Vite + TanStack Router UI running inside Tauri desktop.
 
 - File-based routes in `src/routes/`
 - TanStack Router plugin auto-generates `src/routeTree.gen.ts` — **never edit**
-- Panda CSS generated output in `styled-system/` — **never edit**
+- TailwindCSS v4 is configured via Vite plugin and `src/index.css`
+- Use Tailwind utility classes for component styling
+- Do not introduce PandaCSS/styled-system back into the web app
 
 ## Commands
 

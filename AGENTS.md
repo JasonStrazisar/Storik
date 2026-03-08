@@ -32,7 +32,8 @@ Ticketing system for autonomous AI coding agents. Runtime is desktop-first with 
 
 - TypeScript strict mode everywhere; keep Rust command payloads and shared TS contracts aligned.
 - Tests use vitest for web/shared and Rust tests for desktop command behavior.
-- Never edit generated files: `routeTree.gen.ts`, `styled-system/`.
+- Never edit generated files: `routeTree.gen.ts`.
+- Web styling uses TailwindCSS v4 in `apps/web/src/index.css` and utility classes in components.
 - Keep `@storik/shared` dependency-minimal and platform-agnostic.
 
 ## Architecture

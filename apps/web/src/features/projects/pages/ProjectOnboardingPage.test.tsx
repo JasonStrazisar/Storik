@@ -41,7 +41,7 @@ describe("ProjectOnboardingPage", () => {
   it("renders submit button", () => {
     render(<ProjectOnboardingPage />)
     expect(screen.getByTestId("submit-button")).toBeInTheDocument()
-    expect(screen.getByTestId("submit-button")).toHaveTextContent("Create Project")
+    expect(screen.getByTestId("submit-button")).toHaveTextContent("Continue")
   })
 
   it("submits form with entered data", async () => {
@@ -88,6 +88,6 @@ describe("ProjectOnboardingPage", () => {
     expect(screen.getByTestId("project-name-input")).toBeDisabled()
     expect(screen.getByTestId("project-path-input")).toBeDisabled()
     expect(screen.getByTestId("submit-button")).toBeDisabled()
-    expect(screen.getByTestId("submit-button")).toHaveTextContent("Creating...")
+    expect(screen.getByTestId("submit-button")).toHaveTextContent("Continue")
   })
 })

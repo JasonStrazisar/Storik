@@ -5,9 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "prepare": "panda codegen",
-    "pretest": "panda codegen"
+    "build": "vite build"
   },
   "dependencies": {
     "@storik/shared": "workspace:*",
@@ -18,13 +16,14 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@pandacss/dev": "^0.53.0",
+    "@tailwindcss/vite": "^4.1.12",
     "@tanstack/router-plugin": "^1.114.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
     "@vitejs/plugin-react": "^4.3.0",
     "happy-dom": "^20.8.3",
+    "tailwindcss": "^4.1.12",
     "typescript": "^5.7.0",
     "vite": "^6.2.0"
   }
